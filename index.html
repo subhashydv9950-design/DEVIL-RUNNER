@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEVIL RUNNER</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --red: #ff263f;
+  --bg: #09090e;
+  --panel: #171720;
+  --white: #f8f8ff;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--white);
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+}
+
+#game {
+  width: 100%;
+  max-width: 900px;
+  min-height: 520px;
+  background: #0e0e16;
+  border: 1px solid #39202a;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 35px #ff263f12;
+}
+
+header {
+  min-height: 65px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #30202a;
+}
+
+.logo {
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--red);
+}
+
+#coins {
+  background: var(--panel);
+  border: 1px solid #39303a;
+  border-radius: 9px;
+  padding: 9px 12px;
+  font-weight: bold;
+}
+
+#screen {
+  min-height: 390px;
+  padding: 20px;
+}
+
+button {
+  border: 1px solid #4b2833;
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--white);
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  border-color: var(--red);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.primary {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
+.menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.menu button {
+  min-height: 65px;
+}
+
+h1 {
+  font-size: clamp(28px, 7vw, 48px);
+  margin-bottom: 10px;
+}
+
+h2 {
+  margin-bottom: 14px;
+}
+
+p {
+  color: #aaaab9;
+  line-height: 1.6;
+}
+
+#screenTitle {
+  color: var(--red);
+  font-size: 12px;
+  letter-spacing: 3px;
+  margin-bottom: 15px;
+}
+
+footer {
+  border-top: 1px solid #30202a;
+  padding: 13px;
+  text-align: center;
+  color: #858594;
+  font-size: 12px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  #game {
+    min-height: 500px;
+  }
+
+  #screen {
+    padding: 16px;
+  }
+
+  .logo {
+    font-size: 19px;
+  }
+
+  .menu {
+    gap: 9px;
+  }
+
+  .menu button {
+    padding: 10px 5px;
+  }
+}
+</style>
+</head>
+
+<body>
+<div id="game">
+
+  <header>
+    <div class="logo">☠ DEVIL RUNNER</div>
+    <div id="coins">🪙 <span id="coinCount">0</span></div>
+  </header>
+
+  <main id="screen">
+    <div id="screenTitle">SURVIVE THE DARKNESS</div>
+
+    <section id="homeScreen">
+      <h1>DEVIL<br>RUNNER</h1>
+      <p>Run farther. Collect coins. Unlock your destiny.</p>
+
+      <div class="menu">
+        <button class="primary" id="playBtn">▶ PLAY</button>
+        <button id="characterBtn">☠ CHARACTERS</button>
+        <button id="tasksBtn">🎯 TASKS</button>
+        <button id="profileBtn">👤 PROFILE</button>
+        <button id="settingsBtn">⚙ SETTINGS</button>
+        <button id="aboutBtn">ⓘ ABOUT</button>
+      </div>
+    </section>
+
+    <!-- PART 02 WILL ADD GAME NAVIGATION -->
+    <!-- PART 03 WILL ADD GAME MODES -->
+    <!-- PART 04 WILL ADD CHARACTER UNLOCKS -->
+    <!-- PART 05 WILL ADD THE RUNNER GAME -->
+    <!-- PART 06 WILL ADD SOUND AND MUSIC -->
+  </main>
+
+  <footer>
+    DEVIL RUNNER • RUN • COLLECT • CONQUER
+  </footer>
+
+</div>
+
+<script>
+// DEVIL RUNNER — PART 01
+// The game systems will be connected in the
+// following numbered parts.
+
+const DEVIL_RUNNER = {
+  name: "DEVIL RUNNER",
+  version: "1.0",
+  coins: 0,
+  level: 1,
+  difficulty: "Easy"
+};
+
+document.getElementById("coinCount").textContent =
+  DEVIL_RUNNER.coins;
+  
+/* =========================================
+   DEVIL RUNNER — PART 02
+   HOME NAVIGATION SYSTEM
+========================================= */
+
+const DRNavigation = {
+  screen: document.getElementById("screen"),
+  title: document.getElementById("screenTitle"),
+
+  homeHTML: null,
+
+  init() {
+    this.homeHTML = this.screen.innerHTML;
+    this.bindHome();
+  },
+
+  show(title, content) {
+    this.title.textContent = title;
+    this.screen.innerHTML = content;
+  },
+
+  goHome() {
+    this.screen.innerHTML = this.homeHTML;
+    this.title = document.getElementById("screenTitle");
+    this.bindHome();
+  },
+
+  bindHome() {
+    document.getElementById("playBtn")
+      ?.addEventListener("click", () => {
+        this.showModes();
+      });
+
+    document.getElementById("characterBtn")
+      ?.addEventListener("click", () => {
+        this.show("CHARACTERS", `
+          <h2>☠ Character Collection</h2>
+          <p>Discover new runners and unlock them with coins.</p>
+          <div class="menu">
+            <button onclick="DRNavigation.goHome()">← HOME</button>
+          </div>
+        `);
+      });
+
+    document.getElementById("tasksBtn")
+      ?.addEventListener("click", () => {
+        this.show("MISSIONS", `
+          <h2>🎯 Daily Tasks</h2>
+          <p>Run, collect coins and complete missions.</p>
+          <div class="menu">
+            <button onclick="DRNavigation.goHome()">← HOME</button>
+          </div>
+        `);
+      });
+
+    document.getElementById("profileBtn")
+      ?.addEventListener("click", () => {
+        this.show("PLAYER PROFILE", `
+          <h2>👤 Player Profile</h2>
+          <p>Level: ${DEVIL_RUNNER.level}</p>
+          <p>Coins: ${DEVIL_RUNNER.coins}</p>
+          <div class="menu">
+            <button onclick="DRNavigation.goHome()">← HOME</button>
+          </div>
+        `);
+      });
+
+    document.getElementById("settingsBtn")
+      ?.addEventListener("click", () => {
+        this.show("SETTINGS", `
+          <h2>⚙ Game Settings</h2>
+          <p>Sound, music, language and controls will be configured here.</p>
+          <div class="menu">
+            <button onclick="DRNavigation.goHome()">← HOME</button>
+          </div>
+        `);
+      });
+
+    document.getElementById("aboutBtn")
+      ?.addEventListener("click", () => {
+        this.show("ABOUT THE GAME", `
+          <h2>☠ DEVIL RUNNER</h2>
+          <p>Founder &amp; Developer: Subhash Yadav</p>
+          <p>Instagram: @iamsubhash177</p>
+          <p>Email: yahu9950@gmail.com</p>
+          <div class="menu">
+            <button onclick="DRNavigation.goHome()">← HOME</button>
+          </div>
+        `);
+      });
+  },
+
+  showModes() {
+    this.show("SELECT GAME MODE", `
+      <h2>Choose Your Challenge</h2>
+      <div class="menu">
+        <button class="primary"
+          onclick="DRNavigation.startMode('Easy')">
+          🟢 EASY
+        </button>
+
+        <button
+          onclick="DRNavigation.startMode('Medium')">
+          🟡 MEDIUM
+        </button>
+
+        <button
+          onclick="DRNavigation.startMode('Hard')">
+          🔴 HARD
+        </button>
+
+        <button
+          onclick="DRNavigation.startMode('Survival')">
+          💀 SURVIVAL
+        </button>
+
+        <button
+          onclick="DRNavigation.startMode('Mission')">
+          🎯 MISSION
+        </button>
+
+        <button onclick="DRNavigation.goHome()">
+          ← HOME
+        </button>
+      </div>
+    `);
+  },
+
+  startMode(mode) {
+    DEVIL_RUNNER.difficulty = mode;
+
+    this.show("MODE SELECTED", `
+      <h2>${mode.toUpperCase()} MODE</h2>
+      <p>Your selected mode: ${mode}</p>
+      <p>The playable runner and difficulty mechanics
+      will be added in the upcoming gameplay parts.</p>
+      <div class="menu">
+        <button class="primary"
+          onclick="DRNavigation.showModes()">
+          CHANGE MODE
+        </button>
+
+        <button onclick="DRNavigation.goHome()">
+          ← HOME
+        </button>
+      </div>
+    `);
+  }
+};
+
+DRNavigation.init();
+  /* =========================================
+   DEVIL RUNNER — PART 03
+   GAME MODES + LEVEL SELECTION
+   PART 03 START
+========================================= */
+
+DRNavigation.showModes = function () {
+  this.show("SELECT GAME MODE", `
+    <h2>Choose Your Challenge</h2>
+    <p>अपना गेम मोड चुनें। हर मोड में आगे के लेवल अनलॉक होंगे।</p>
+
+    <div class="menu">
+      <button class="primary"
+        onclick="DRNavigation.showLevels('Easy')">
+        🟢 EASY
+      </button>
+
+      <button onclick="DRNavigation.showLevels('Medium')">
+        🟡 MEDIUM
+      </button>
+
+      <button onclick="DRNavigation.showLevels('Hard')">
+        🔴 HARD
+      </button>
+
+      <button onclick="DRNavigation.showLevels('Survival')">
+        💀 SURVIVAL
+      </button>
+
+      <button onclick="DRNavigation.showLevels('Mission')">
+        🎯 MISSION
+      </button>
+
+      <button onclick="DRNavigation.goHome()">
+        ← HOME
+      </button>
+    </div>
+  `);
+};
+
+DRNavigation.showLevels = function (mode) {
+  const levelButtons = Array.from({ length: 10 }, (_, i) => {
+    const level = i + 1;
+    const unlocked = level === 1;
+
+    return `
+      <button
+        ${unlocked ? 'class="primary"' : 'disabled'}
+        style="${unlocked ? '' : 'opacity:.45;'}"
+        onclick="${unlocked
+          ? `DRNavigation.startMode('${mode}', ${level})`
+          : ''}">
+        ${unlocked ? '▶' : '🔒'} LEVEL ${level}
+      </button>
+    `;
+  }).join("");
+
+  this.show(mode.toUpperCase() + " LEVELS", `
+    <h2>${mode} Mode</h2>
+    <p>पहला लेवल उपलब्ध है। बाकी लेवल आगे की प्रगति पर अनलॉक होंगे।</p>
+
+    <div class="menu">
+      ${levelButtons}
+      <button onclick="DRNavigation.showModes()">← MODES</button>
+      <button onclick="DRNavigation.goHome()">⌂ HOME</button>
+    </div>
+  `);
+};
+
+DRNavigation.startMode = function (mode, level = 1) {
+  DEVIL_RUNNER.difficulty = mode;
+  DEVIL_RUNNER.level = level;
+
+  this.show("READY TO RUN", `
+    <h2>☠ ${mode.toUpperCase()}</h2>
+    <h3>LEVEL ${level}</h3>
+    <p>तैयार हो जाओ! अगली पार्ट्स में रनिंग गेम, बाधाएँ और कॉइन कलेक्शन जोड़े जाएँगे।</p>
+
+    <div class="menu">
+      <button class="primary"
+        onclick="DRNavigation.showLevels('${mode}')">
+        SELECT LEVEL
+      </button>
+
+      <button onclick="DRNavigation.showModes()">
+        ← MODES
+      </button>
+
+      <button onclick="DRNavigation.goHome()">
+        ⌂ HOME
+      </button>
+    </div>
+  `);
+};
+
+/* PART 03 COMPLETE
+   Added:
+   ✓ 5 game modes
+   ✓ 10 levels per mode
+   ✓ Level 1 unlocked
+   ✓ Remaining levels locked
+   ✓ Mode and level selection
+========================================= */
+ /* =========================================
+   DEVIL RUNNER — PART 04
+   CHARACTER COLLECTION SYSTEM
+   PART 04 START
+========================================= */
+
+DEVIL_RUNNER.coins = DEVIL_RUNNER.coins || 0;
+DEVIL_RUNNER.selectedCharacter = 0;
+
+DEVIL_RUNNER.characters = [
+  { name: "Shadow", icon: "🥷", cost: 0 },
+  { name: "Fire Devil", icon: "😈", cost: 100 },
+  { name: "Dark Knight", icon: "🦹", cost: 250 },
+  { name: "Phantom", icon: "👻", cost: 500 },
+  { name: "Demon King", icon: "👹", cost: 1000 },
+  { name: "Hell Beast", icon: "👿", cost: 2000 }
+];
+
+DEVIL_RUNNER.unlockedCharacters = [0];
+
+DRNavigation.showCharacters = function () {
+  const cards = DEVIL_RUNNER.characters.map((character, index) => {
+    const unlocked =
+      DEVIL_RUNNER.unlockedCharacters.includes(index);
+
+    const selected =
+      DEVIL_RUNNER.selectedCharacter === index;
+
+    return `
+      <div style="
+        background:#171720;
+        border:1px solid ${selected ? '#ff263f' : '#39303a'};
+        border-radius:12px;
+        padding:14px;
+        text-align:center;
+      ">
+        <div style="font-size:38px">${character.icon}</div>
+        <h3 style="margin:8px 0">${character.name}</h3>
+        <p>${unlocked
+          ? (selected ? "✓ SELECTED" : "UNLOCKED")
+          : "🪙 " + character.cost + " COINS"}</p>
+
+        <button
+          style="margin-top:10px;width:100%"
+          onclick="DRNavigation.characterAction(${index})">
+          ${unlocked
+            ? (selected ? "SELECTED" : "SELECT")
+            : "🔒 UNLOCK"}
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  this.show("CHARACTER COLLECTION", `
+    <h2>Choose Your Runner</h2>
+    <p>Coins: 🪙 ${DEVIL_RUNNER.coins}</p>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      margin-top:18px;
+    ">
+      ${cards}
+    </div>
+
+    <div class="menu">
+      <button onclick="DRNavigation.goHome()">← HOME</button>
+    </div>
+  `);
+};
+
+DRNavigation.characterAction = function (index) {
+  const character = DEVIL_RUNNER.characters[index];
+
+  if (!character) return;
+
+  if (DEVIL_RUNNER.unlockedCharacters.includes(index)) {
+    DEVIL_RUNNER.selectedCharacter = index;
+    this.showCharacters();
+    return;
+  }
+
+  if (DEVIL_RUNNER.coins < character.cost) {
+    alert("Not enough coins! Play the game to earn more.");
+    return;
+  }
+
+  DEVIL_RUNNER.coins -= character.cost;
+  DEVIL_RUNNER.unlockedCharacters.push(index);
+  DEVIL_RUNNER.selectedCharacter = index;
+
+  document.getElementById("coinCount").textContent =
+    DEVIL_RUNNER.coins;
+
+  this.showCharacters();
+};
+
+/* Connect the home-page character button */
+DRNavigation.bindHome = (function (original) {
+  return function () {
+    original.call(this);
+
+    document.getElementById("characterBtn")
+      ?.addEventListener("click", () => {
+        this.showCharacters();
+      });
+  };
+})(DRNavigation.bindHome);
+
+/* PART 04 COMPLETE
+   ✓ 6 character options
+   ✓ First character unlocked
+   ✓ Coin-based character unlocks
+   ✓ Character selection
+   ✓ Coin counter updates
+========================================= */ 
+
+/* =========================================
+   DEVIL RUNNER — PART 05
+   RUNNER GAME ENGINE
+   PART 05 START
+========================================= */
+
+const DRRunnerGame = {
+  canvas: null,
+  ctx: null,
+  raf: 0,
+  active: false,
+  paused: false,
+  over: false,
+  score: 0,
+  earned: 0,
+  speed: 4,
+  frame: 0,
+  player: { y: 0, vy: 0, jumping: false, sliding: false },
+  obstacles: [],
+  coins: [],
+  lastTime: 0,
+
+  start() {
+    cancelAnimationFrame(this.raf);
+
+    this.active = true;
+    this.paused = false;
+    this.over = false;
+    this.score = 0;
+    this.earned = 0;
+    this.frame = 0;
+    this.lastTime = 0;
+    this.obstacles = [];
+    this.coins = [];
+
+    const mode = DEVIL_RUNNER.difficulty || "Easy";
+    this.speed = mode === "Medium" ? 5 :
+      mode === "Hard" ? 6 :
+      mode === "Survival" ? 6 : 4;
+
+    DRNavigation.show("DEVIL RUNNER", `
+      <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <b id="drScore">DISTANCE: 0</b>
+        <b id="drRunCoins">🪙 0</b>
+        <button onclick="DRRunnerGame.togglePause()">Ⅱ PAUSE</button>
+      </div>
+
+      <canvas id="drCanvas"
+        style="display:block;width:100%;height:280px;background:#10101b;border:1px solid #44212d;border-radius:12px;touch-action:manipulation">
+      </canvas>
+
+      <p id="drMessage" style="text-align:center;margin:10px 0">
+        Tap JUMP to avoid obstacles!
+      </p>
+
+      <div class="menu">
+        <button class="primary" onclick="DRRunnerGame.jump()">⬆ JUMP</button>
+        <button onclick="DRRunnerGame.slide()">⬇ SLIDE</button>
+        <button onclick="DRRunnerGame.goHome()">⌂ HOME</button>
+        <button onclick="DRRunnerGame.restart()">↻ RESTART</button>
+      </div>
+    `);
+
+    this.canvas = document.getElementById("drCanvas");
+    this.ctx = this.canvas.getContext("2d");
+
+    this.canvas.width = Math.max(300, this.canvas.clientWidth);
+    this.canvas.height = 280;
+
+    this.player.y = this.ground() - 42;
+    this.player.vy = 0;
+    this.player.jumping = false;
+    this.player.sliding = false;
+
+    this.canvas.addEventListener("pointerdown", () => this.jump());
+
+    this.loop(0);
+  },
+
+  ground() {
+    return this.canvas.height - 28;
+  },
+
+  jump() {
+    if (!this.active || this.paused || this.over) return;
+
+    if (!this.player.jumping) {
+      this.player.vy = -12;
+      this.player.jumping = true;
+      this.player.sliding = false;
+      this.sound(520, 0.07);
+    }
+  },
+
+  slide() {
+    if (!this.active || this.paused || this.over) return;
+    this.player.sliding = true;
+    setTimeout(() => {
+      this.player.sliding = false;
+    }, 550);
+  },
+
+  togglePause() {
+    if (!this.active || this.over) return;
+
+    this.paused = !this.paused;
+
+    const message = document.getElementById("drMessage");
+    if (message) {
+      message.textContent = this.paused
+        ? "GAME PAUSED"
+        : "Keep running!";
+    }
+
+    if (!this.paused) {
+      this.lastTime = 0;
+      this.loop(0);
+    }
+  },
+
+  loop(time) {
+    if (!this.active || this.paused || this.over) return;
+
+    const dt = this.lastTime
+      ? Math.min((time - this.lastTime) / 16.67, 2)
+      : 1;
+
+    this.lastTime = time;
+    this.update(dt);
+    this.draw();
+
+    this.raf = requestAnimationFrame(t => this.loop(t));
+  },
+
+  update(dt) {
+    this.frame += dt;
+    this.score += dt * 0.12;
+
+    const p = this.player;
+    p.vy += 0.55 * dt;
+    p.y += p.vy * dt;
+
+    if (p.y >= this.ground() - 42) {
+      p.y = this.ground() - 42;
+      p.vy = 0;
+      p.jumping = false;
+    }
+
+    if (this.frame > 45) {
+      this.frame = 0;
+
+      if (Math.random() < 0.72) {
+        this.obstacles.push({
+          x: this.canvas.width + 20,
+          w: 25 + Math.random() * 14,
+          h: 28 + Math.random() * 20
+        });
+      }
+
+      if (Math.random() < 0.8) {
+        this.coins.push({
+          x: this.canvas.width + 20,
+          y: this.ground() - 65 - Math.random() * 45,
+          got: false
+        });
+      }
+    }
+
+    this.obstacles.forEach(o => o.x -= this.speed * dt);
+    this.coins.forEach(c => c.x -= this.speed * dt);
+
+    this.obstacles = this.obstacles.filter(o => o.x > -60);
+    this.coins = this.coins.filter(c => c.x > -30 && !c.got);
+
+    const px = 65;
+    const py = p.y;
+    const ph = p.sliding ? 22 : 42;
+
+    for (const o of this.obstacles) {
+      if (
+        px + 28 > o.x &&
+        px < o.x + o.w &&
+        py + ph > this.ground() - o.h
+      ) {
+        this.finish();
+        return;
+      }
+    }
+
+    for (const c of this.coins) {
+      if (Math.abs(c.x - (px + 14)) < 22 &&
+          Math.abs(c.y - (py + 18)) < 32) {
+        c.got = true;
+        this.earned++;
+        this.sound(850, 0.08);
+      }
+    }
+
+    const scoreEl = document.getElementById("drScore");
+    const coinsEl = document.getElementById("drRunCoins");
+
+    if (scoreEl) scoreEl.textContent =
+      "DISTANCE: " + Math.floor(this.score);
+
+    if (coinsEl) coinsEl.textContent =
+      "🪙 " + this.earned;
+  },
+
+  draw() {
+    const c = this.ctx;
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    const ground = this.ground();
+
+    c.clearRect(0, 0, w, h);
+
+    const bg = c.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0, "#171326");
+    bg.addColorStop(1, "#381723");
+    c.fillStyle = bg;
+    c.fillRect(0, 0, w, h);
+
+    c.fillStyle = "#ff263f";
+    c.globalAlpha = 0.18;
+    for (let i = 0; i < 8; i++) {
+      c.fillRect((i * 90 - this.score * 2) % (w + 90), 30, 2, 90);
+    }
+    c.globalAlpha = 1;
+
+    c.fillStyle = "#29202c";
+    c.fillRect(0, ground, w, h - ground);
+
+    c.strokeStyle = "#ff263f";
+    c.lineWidth = 2;
+    c.beginPath();
+    c.moveTo(0, ground);
+    c.lineTo(w, ground);
+    c.stroke();
+
+    for (const o of this.obstacles) {
+      c.fillStyle = "#ff263f";
+      c.fillRect(o.x, ground - o.h, o.w, o.h);
+      c.fillStyle = "#ff9caa";
+      c.fillRect(o.x + 4, ground - o.h + 5, 4, o.h - 10);
+    }
+
+    for (const coin of this.coins) {
+      c.fillStyle = "#ffd447";
+      c.beginPath();
+      c.arc(coin.x, coin.y, 9, 0, Math.PI * 2);
+      c.fill();
+
+      c.fillStyle = "#8d5c00";
+      c.font = "bold 12px Arial";
+      c.fillText("$", coin.x - 4, coin.y + 4);
+    }
+
+    const p = this.player;
+    const x = 65;
+    const height = p.sliding ? 22 : 42;
+
+    c.fillStyle = "#ff263f";
+    c.fillRect(x, p.y, 27, height);
+
+    c.fillStyle = "#ffffff";
+    c.fillRect(x + 16, p.y + 8, 6, 5);
+
+    c.fillStyle = "#8d1a30";
+    c.fillRect(x - 5, p.y + height - 4, 12, 6);
+    c.fillRect(x + 16, p.y + height - 4, 12, 6);
+  },
+
+  finish() {
+    this.over = true;
+    this.active = false;
+    cancelAnimationFrame(this.raf);
+
+    DEVIL_RUNNER.coins += this.earned;
+    document.getElementById("coinCount").textContent =
+      DEVIL_RUNNER.coins;
+
+    this.sound(150, 0.25);
+
+    const distance = Math.floor(this.score);
+
+    DRNavigation.show("RUN OVER", `
+      <h2>☠ GAME OVER</h2>
+      <p>Distance: ${distance}</p>
+      <p>Coins collected: 🪙 ${this.earned}</p>
+      <p>Coins added to your balance: ${this.earned}</p>
+
+      <div class="menu">
+        <button class="primary" onclick="DRRunnerGame.restart()">↻ PLAY AGAIN</button>
+        <button onclick="DRNavigation.showModes()">GAME MODES</button>
+        <button onclick="DRRunnerGame.goHome()">⌂ HOME</button>
+      </div>
+    `);
+  },
+
+  restart() {
+    this.start();
+  },
+
+  goHome() {
+    this.active = false;
+    cancelAnimationFrame(this.raf);
+    DRNavigation.goHome();
+  },
+
+  sound(frequency, duration) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+
+      const audio = new AC();
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+
+      oscillator.frequency.value = frequency;
+      gain.gain.value = 0.06;
+
+      oscillator.connect(gain);
+      gain.connect(audio.destination);
+
+      oscillator.start();
+      oscillator.stop(audio.currentTime + duration);
+      oscillator.onended = () => audio.close();
+    } catch (e) {}
+  }
+};
+
+/* Connect selected mode to playable runner */
+DRNavigation.startMode = function (mode, level = 1) {
+  DEVIL_RUNNER.difficulty = mode;
+  DEVIL_RUNNER.level = level;
+  DRRunnerGame.start();
+};
+
+/* PART 05 COMPLETE
+   ✓ Playable runner screen
+   ✓ Jump and slide controls
+   ✓ Obstacles and collision
+   ✓ Coin collection and rewards
+   ✓ Distance counter
+   ✓ Pause, restart and home
+   ✓ Basic jump, coin and collision sounds
+========================================= */
+  
+
+
+
+
+
+
+
+  
+</script>
+</body>
+</html>
+
