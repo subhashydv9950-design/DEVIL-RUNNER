@@ -941,6 +941,461 @@ DRNavigation.startMode = function (mode, level = 1) {
 ========================================= */
   
 
+/* =========================================
+   DEVIL RUNNER — PART 06
+   AUDIO & MUSIC SYSTEM
+   PART 06 START
+========================================= */
+
+const DRAudio = {
+  soundOn: true,
+  musicOn: false,
+  context: null,
+  musicTimer: null,
+  note: 0,
+
+  init() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC && !this.context) {
+      this.context = new AC();
+    }
+
+    if (this.context?.state === "suspended") {
+      this.context.resume();
+    }
+  },
+
+  tone(frequency = 440, duration = 0.1, volume = 0.06) {
+    if (!this.soundOn) return;
+
+    try {
+      this.init();
+      if (!this.context) return;
+
+      const oscillator = this.context.createOscillator();
+      const gain = this.context.createGain();
+
+      oscillator.type = "sawtooth";
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(volume, this.context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        this.context.currentTime + duration
+      );
+
+      oscillator.connect(gain);
+      gain.connect(this.context.destination);
+      oscillator.start();
+      oscillator.stop(this.context.currentTime + duration);
+    } catch (e) {}
+  },
+
+  startMusic() {
+    this.init();
+
+    if (!this.context || this.musicOn) return;
+
+    this.musicOn = true;
+
+    const melody = [110, 130.81, 146.83, 130.81, 98, 123.47];
+
+    this.musicTimer = setInterval(() => {
+      if (this.musicOn) {
+        this.tone(melody[this.note % melody.length], 0.22, 0.018);
+        this.note++;
+      }
+    }, 280);
+  },
+
+  stopMusic() {
+    this.musicOn = false;
+    clearInterval(this.musicTimer);
+    this.musicTimer = null;
+  },
+
+  toggleMusic() {
+    if (this.musicOn) {
+      this.stopMusic();
+    } else {
+      this.startMusic();
+    }
+    this.showSettings();
+  },
+
+  toggleSound() {
+    this.soundOn = !this.soundOn;
+    if (this.soundOn) this.tone(600, 0.1);
+    this.showSettings();
+  },
+
+  showSettings() {
+    DRNavigation.show("AUDIO SETTINGS", `
+      <h2>🎵 Sound & Music</h2>
+      <p>Background music and game sound controls.</p>
+
+      <div class="menu">
+        <button class="${this.musicOn ? 'primary' : ''}"
+          onclick="DRAudio.toggleMusic()">
+          ${this.musicOn ? '🔊 MUSIC: ON' : '🔇 MUSIC: OFF'}
+        </button>
+
+        <button class="${this.soundOn ? 'primary' : ''}"
+          onclick="DRAudio.toggleSound()">
+          ${this.soundOn ? '🔊 SOUND: ON' : '🔇 SOUND: OFF'}
+        </button>
+
+        <button onclick="DRNavigation.goHome()">
+          ← HOME
+        </button>
+      </div>
+    `);
+  }
+};
+
+/* Connect the existing SETTINGS button */
+document.getElementById("settingsBtn")
+  ?.addEventListener("click", () => {
+    DRAudio.showSettings();
+  });
+
+/* Use audio settings for runner effects */
+DRRunnerGame.sound = function (frequency, duration) {
+  DRAudio.tone(frequency, duration, 0.06);
+};
+
+/* Start music on the first user interaction.
+   Music can also be switched off in Settings. */
+document.addEventListener("pointerdown", function startGameMusic() {
+  if (DRAudio.musicOn) return;
+  DRAudio.startMusic();
+  document.removeEventListener("pointerdown", startGameMusic);
+}, { once: true });
+
+/* PART 06 COMPLETE
+   ✓ Background music toggle
+   ✓ Sound effects toggle
+   ✓ Generated audio tones
+   ✓ Runner sounds use shared audio settings
+   ✓ Audio settings screen
+========================================= */
+     
+/* =========================================
+   DEVIL RUNNER — PART 07
+   TASKS & REWARDS SYSTEM
+   PART 07 START
+========================================= */
+
+const DRTasks = {
+  list: [
+    {
+      id: "run100",
+      title: "🏃 First Run",
+      description: "Run 100 distance units",
+      target: 100,
+      reward: 30,
+      progress: 0,
+      claimed: false
+    },
+    {
+      id: "collect10",
+      title: "🪙 Coin Hunter",
+      description: "Collect 10 coins in one run",
+      target: 10,
+      reward: 50,
+      progress: 0,
+      claimed: false
+    },
+    {
+      id: "play3",
+      title: "🔥 Keep Running",
+      description: "Complete 3 runs",
+      target: 3,
+      reward: 75,
+      progress: 0,
+      claimed: false
+    }
+  ],
+
+  completedRuns: 0,
+
+  show() {
+    const items = this.list.map(task => {
+      const completed = task.progress >= task.target;
+
+      return `
+        <div style="
+          padding:14px;
+          margin:12px 0;
+          background:#171720;
+          border:1px solid #39303a;
+          border-radius:12px;
+        ">
+          <h3>${task.title}</h3>
+          <p>${task.description}</p>
+          <p>Progress: ${Math.min(task.progress, task.target)}
+            / ${task.target}</p>
+          <p>Reward: 🪙 ${task.reward}</p>
+
+          <button
+            class="${completed && !task.claimed ? 'primary' : ''}"
+            ${!completed || task.claimed ? 'disabled' : ''}
+            onclick="DRTasks.claim('${task.id}')">
+            ${task.claimed ? '✓ CLAIMED' :
+              completed ? 'CLAIM REWARD' : 'IN PROGRESS'}
+          </button>
+        </div>
+      `;
+    }).join("");
+
+    DRNavigation.show("MISSIONS & TASKS", `
+      <h2>🎯 Runner Missions</h2>
+      <p>Complete missions to earn bonus coins.</p>
+      ${items}
+      <div class="menu">
+        <button onclick="DRNavigation.goHome()">← HOME</button>
+      </div>
+    `);
+  },
+
+  claim(id) {
+    const task = this.list.find(item => item.id === id);
+    if (!task || task.claimed || task.progress < task.target) return;
+
+    task.claimed = true;
+    DEVIL_RUNNER.coins += task.reward;
+
+    document.getElementById("coinCount").textContent =
+      DEVIL_RUNNER.coins;
+
+    this.show();
+  },
+
+  recordRun(distance, collected) {
+    this.completedRuns++;
+
+    const runTask = this.list.find(t => t.id === "run100");
+    const coinTask = this.list.find(t => t.id === "collect10");
+    const playTask = this.list.find(t => t.id === "play3");
+
+    if (runTask) {
+      runTask.progress = Math.max(
+        runTask.progress,
+        Math.floor(distance)
+      );
+    }
+
+    if (coinTask) {
+      coinTask.progress = Math.max(
+        coinTask.progress,
+        collected
+      );
+    }
+
+    if (playTask) {
+      playTask.progress = this.completedRuns;
+    }
+  }
+};
+
+/* Connect TASKS button */
+document.getElementById("tasksBtn")
+  ?.addEventListener("click", () => {
+    DRTasks.show();
+  });
+
+/* Record results when a run ends */
+const DROriginalFinish = DRRunnerGame.finish.bind(DRRunnerGame);
+
+DRRunnerGame.finish = function () {
+  DRTasks.recordRun(this.score, this.earned);
+  DROriginalFinish();
+};
+
+/* PART 07 COMPLETE
+   ✓ Three missions
+   ✓ Run distance tracking
+   ✓ Coin collection mission
+   ✓ Completed-run mission
+   ✓ Claimable coin rewards
+========================================= */
+     
+/* =========================================
+   DEVIL RUNNER — PART 08
+   PROFILE & SAVE SYSTEM
+   PART 08 START
+========================================= */
+
+const DRSave = {
+  key: "DEVIL_RUNNER_SAVE_V1",
+
+  save() {
+    try {
+      const data = {
+        coins: DEVIL_RUNNER.coins,
+        level: DEVIL_RUNNER.level,
+        difficulty: DEVIL_RUNNER.difficulty,
+        selectedCharacter: DEVIL_RUNNER.selectedCharacter,
+        unlockedCharacters: DEVIL_RUNNER.unlockedCharacters,
+        completedRuns: DRTasks.completedRuns,
+        tasks: DRTasks.list
+      };
+
+      localStorage.setItem(this.key, JSON.stringify(data));
+    } catch (error) {
+      console.warn("Game progress could not be saved.");
+    }
+  },
+
+  load() {
+    try {
+      const raw = localStorage.getItem(this.key);
+      if (!raw) return;
+
+      const data = JSON.parse(raw);
+
+      if (Number.isFinite(data.coins)) {
+        DEVIL_RUNNER.coins = Math.max(0, data.coins);
+      }
+
+      if (Number.isFinite(data.level)) {
+        DEVIL_RUNNER.level = Math.max(1, data.level);
+      }
+
+      if (typeof data.difficulty === "string") {
+        DEVIL_RUNNER.difficulty = data.difficulty;
+      }
+
+      if (Array.isArray(data.unlockedCharacters)) {
+        DEVIL_RUNNER.unlockedCharacters =
+          [...new Set([0, ...data.unlockedCharacters.filter(
+            n => Number.isInteger(n) &&
+            n >= 0 &&
+            n < DEVIL_RUNNER.characters.length
+          )])];
+      }
+
+      if (Number.isInteger(data.selectedCharacter) &&
+          DEVIL_RUNNER.unlockedCharacters.includes(
+            data.selectedCharacter
+          )) {
+        DEVIL_RUNNER.selectedCharacter = data.selectedCharacter;
+      }
+
+      if (Number.isInteger(data.completedRuns)) {
+        DRTasks.completedRuns = Math.max(0, data.completedRuns);
+      }
+
+      if (Array.isArray(data.tasks)) {
+        data.tasks.forEach(saved => {
+          const task = DRTasks.list.find(t => t.id === saved.id);
+          if (!task) return;
+
+          if (Number.isFinite(saved.progress)) {
+            task.progress = Math.max(0, saved.progress);
+          }
+
+          if (typeof saved.claimed === "boolean") {
+            task.claimed = saved.claimed;
+          }
+        });
+      }
+    } catch (error) {
+      console.warn("Saved progress could not be loaded.");
+    }
+
+    document.getElementById("coinCount").textContent =
+      DEVIL_RUNNER.coins;
+  },
+
+  showProfile() {
+    const character =
+      DEVIL_RUNNER.characters[DEVIL_RUNNER.selectedCharacter];
+
+    const completedTasks =
+      DRTasks.list.filter(task => task.claimed).length;
+
+    DRNavigation.show("PLAYER PROFILE", `
+      <h2>👤 Runner Profile</h2>
+
+      <div style="
+        background:#171720;
+        padding:18px;
+        border:1px solid #39202a;
+        border-radius:12px;
+        margin:15px 0;
+      ">
+        <div style="font-size:42px;text-align:center">
+          ${character ? character.icon : "🏃"}
+        </div>
+
+        <h3 style="text-align:center">
+          ${character ? character.name : "Shadow"}
+        </h3>
+
+        <p>🪙 Total Coins: ${DEVIL_RUNNER.coins}</p>
+        <p>⭐ Current Level: ${DEVIL_RUNNER.level}</p>
+        <p>🎮 Last Mode: ${DEVIL_RUNNER.difficulty}</p>
+        <p>☠ Unlocked Characters:
+          ${DEVIL_RUNNER.unlockedCharacters.length}
+        </p>
+        <p>🎯 Missions Claimed: ${completedTasks}</p>
+        <p>🏃 Completed Runs: ${DRTasks.completedRuns}</p>
+      </div>
+
+      <div class="menu">
+        <button class="primary"
+          onclick="DRSave.save();DRSave.showProfile()">
+          💾 SAVE PROGRESS
+        </button>
+        <button onclick="DRNavigation.goHome()">← HOME</button>
+      </div>
+    `);
+  }
+};
+
+/* Load saved progress */
+DRSave.load();
+
+/* Connect the profile button */
+document.getElementById("profileBtn")
+  ?.addEventListener("click", () => {
+    DRSave.showProfile();
+  });
+
+/* Automatically save after character actions */
+const DRPreviousCharacterAction =
+  DRNavigation.characterAction.bind(DRNavigation);
+
+DRNavigation.characterAction = function (index) {
+  DRPreviousCharacterAction(index);
+  DRSave.save();
+};
+
+/* Automatically save after claiming a mission */
+const DRPreviousClaim = DRTasks.claim.bind(DRTasks);
+
+DRTasks.claim = function (id) {
+  DRPreviousClaim(id);
+  DRSave.save();
+};
+
+/* Save coins and progress when a run ends */
+const DRPreviousFinishSave = DRRunnerGame.finish.bind(DRRunnerGame);
+
+DRRunnerGame.finish = function () {
+  DRPreviousFinishSave();
+  DRSave.save();
+};
+
+/* PART 08 COMPLETE
+   ✓ Player profile screen
+   ✓ Coin and level statistics
+   ✓ Character progress saved
+   ✓ Mission progress saved
+   ✓ Automatic local save
+   ✓ Progress restored on reload
+========================================= */
+    
 
 
 
